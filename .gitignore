@@ -1,0 +1,26 @@
+# Ignore the following data-files for commits
+# Source data can be found at the following website:
+# https://dataport.pecanstreet.org/
+
+*.csv
+*.zip
+*.pdf
+*.txt
+*.log
+*.xls
+*.ods
+*.svg
+*.jpg
+*.eps
+*.png
+*.tiff
+*.mat
+*.RData
+*.Rproj.user
+*.mexw64
+*.mexa64
+*.fig
+*.tikz
+*.hprof
+plots/
+
