@@ -9,6 +9,7 @@ Source data is not included in this repository. This is because it would be very
 However, the following files may be of help in downloading data:
 
 1) `/dataPort_downloads/list_of_homes_with_use_AND_gen_from_01_01_2013_till_31_12_2014.sql`
+
 2) `/dataPort_downloads/runMultipleQueries.sh`
 
 
