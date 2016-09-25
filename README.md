@@ -17,7 +17,7 @@ The first file is just a list of house ID numbers which have fields of interest,
 
 
 ## Running the Analysis
-All of the analysis which produced the tables and figures in the paper will is run from the Matlab script `/PecanStreet_run_TimeSeries_Analysis.m`. This script is expected to find the data files in a `/data/` subdirectory, so first download the data into that folder.
+All of the analysis which produced the tables and figures in the paper will is run from the Matlab script `/PecanStreet_run_TimeSeries_Analysis.m`. This script is expected to find the data files in a `/data/` subdirectory, so first download the data into that folder. Note that there are some dependencies on Matlab libraries which will need to be downloaded from the mathworks website (for example `matlab2tikz` and `blah`).
 
 
 There are several Matlab m-file functions included in the root directory `/` which help with running the analysis.
