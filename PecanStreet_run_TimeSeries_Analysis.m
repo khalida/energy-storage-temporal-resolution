@@ -6,10 +6,10 @@
 tic;
 
 %% Running Settings:
-readDataFromMatFile = true;
+readDataFromMatFile = false;
 matFileName = '2016_09_25_matlabFormatData.mat';
-dataDir = ['C:\LocalData\Documents\Documents\PhD\18_DataSets\'...
-    'PecanStreet_Dataport\2013\'];
+dataDir = [pwd filesep 'data\'];
+resultsDir = [pwd filesep 'plots\'];
 
 intervalLengths = [1 2 5 10 30 60];
 nIntervalLengths = length(intervalLengths);
@@ -100,8 +100,8 @@ for capacityIdx = 1:nBatteryCapacities;     % kWh
     xlabel('Interval Length [min]');
     ylabel({'Battery Value', 'relative to 1-minute value'});
     grid on;
-    plotAsTikz(['intervalLength_VS_value_' num2str(battery.capacity) 'kWh.tikz']);
-    print(gcf, '-dpdf', ['intervalLength_VS_value_' num2str(battery.capacity) 'kWh.pdf']);
+    plotAsTikz([resultsDir 'intervalLength_VS_value_' num2str(battery.capacity) 'kWh.tikz']);
+    print(gcf, '-dpdf', [resultsDir 'intervalLength_VS_value_' num2str(battery.capacity) 'kWh.pdf']);
     
     %% Histograms of Relative Value, sorted by aggregation level
     % First collect results
@@ -133,8 +133,8 @@ for capacityIdx = 1:nBatteryCapacities;     % kWh
     end
     xlabel({[num2str(battery.capacity) 'kWh Battery Value'], 'relative to value at 1-minute Interval'});
     linkaxes(axHandles,'x');
-    plotAsTikz(['intervalLength_VS_value_histograms_' num2str(battery.capacity) 'kWh.tikz']);
-    print(gcf, '-dpdf', ['intervalLength_VS_value_histograms_' num2str(battery.capacity) 'kWh.pdf']);
+    plotAsTikz([resultsDir 'intervalLength_VS_value_histograms_' num2str(battery.capacity) 'kWh.tikz']);
+    print(gcf, '-dpdf', [resultsDir 'intervalLength_VS_value_histograms_' num2str(battery.capacity) 'kWh.pdf']);
     
     %% Histograms of Battery kWh Throughput sorted by aggregation level
     % First collect results
@@ -158,8 +158,8 @@ for capacityIdx = 1:nBatteryCapacities;     % kWh
         grid on;
     end
     xlabel([num2str(battery.capacity) 'kWh Battery Annual Throughput [kWh]']);
-    plotAsTikz(['intervalLength_VS_kWhThroughput_' num2str(battery.capacity) 'kWh.tikz']);
-    print(gcf, '-dpdf', ['intervalLength_VS_kWhThroughput_' num2str(battery.capacity) 'kWh.pdf']);
+    plotAsTikz([resultsDir 'intervalLength_VS_kWhThroughput_' num2str(battery.capacity) 'kWh.tikz']);
+    print(gcf, '-dpdf', [resultsDir 'intervalLength_VS_kWhThroughput_' num2str(battery.capacity) 'kWh.pdf']);
     linkaxes(axHandles,'x');
 end
 
@@ -172,8 +172,8 @@ if sum(refIdx_5kWh) > 0
     summerIndexes = localDateNum{mostIdx} >= datenum('2013/08/01') & ...
         localDateNum{mostIdx} < datenum('2013/08/02');
     
-    winterIndexes = localDateNum{mostIdx} >= datenum('2013/08/01') & ...
-        localDateNum{mostIdx} < datenum('2013/08/02');
+    winterIndexes = localDateNum{mostIdx} >= datenum('2013/02/01') & ...
+        localDateNum{mostIdx} < datenum('2013/02/02');
     
     dateVectors = datevec(localDateNum{mostIdx}(summerIndexes));
     fractionalHours = dateVectors(:, 4) + dateVectors(:, 5)./60;
@@ -192,8 +192,8 @@ if sum(refIdx_5kWh) > 0
     ylabel('Power [kW]');
     xlabel('Time [Hrs]');
     legend('Demand', 'PV Output');
-    plotAsTikz('time_series_plot_summer.tikz');
-    print('-dpdf', 'time_series_plot_summer.pdf');
+    plotAsTikz([resultsDir 'time_series_plot_summer.tikz']);
+    print('-dpdf', [resultsDir 'time_series_plot_summer.pdf']);
     
     figure();
     subtightplot(2, 1, 1);
@@ -208,8 +208,8 @@ if sum(refIdx_5kWh) > 0
     
     ylabel('Power [kW]');
     xlabel('Time [Hrs]');
-    plotAsTikz('time_series_plot_winter.tikz');
-    print('-dpdf', 'time_series_plot_winter.pdf');
+    plotAsTikz([resultsDir 'time_series_plot_winter.tikz']);
+    print('-dpdf', [resultsDir 'time_series_plot_winter.pdf']);
     
     
     %% Attempt to fit linear regression model from coarse data to finer:
@@ -258,8 +258,8 @@ if sum(refIdx_5kWh) > 0
     legend('10-min Data', 'Regression Model');
     xlabel({'Battery Value Error',' relative to 1-minute Value []'});
     ylabel('No. of Occurences (test set)');
-    plotAsTikz('errors_with_regression.tikz');
-    print('-dpdf', 'errors_with_regression.pdf');
+    plotAsTikz([resultsDir 'errors_with_regression.tikz']);
+    print('-dpdf', [resultsDir 'errors_with_regression.pdf']);
     disp('10-min error mean:'); disp(mean(errorsFrom10minData));
     disp('10-min error std:'); disp(std(errorsFrom10minData));
     disp('Regression error mean:'); disp(mean(errorsFromRegModel));
@@ -279,16 +279,16 @@ meanBattROI = (meanBattNetValue./7700)*100;
 fprintf('Battery value [\\$] & %.0f & %.0f & %.0f & %.0f & %.0f \\\\ \\hline \n',...
     meanBattValue(1:5));
 
-fprintf('Battery throughput [kWh] & %.0f & %.0f & %.0f & %.0f & %.0f \\\\ \\hline \n',...
+fprintf('Battery throughput [kWh] & %.0f & %.0f & %.0f & %.0f & %.0f  \\\\ \\hline \n',...
     meanBattThroughput(1:5));
 
 fprintf('Battery degradation [] & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \\hline \n',...
     meanBattDegradation(1:5));
 
 fprintf('Battery depreciation [\\$] & %.0f & %.0f & %.0f & %.0f & %.0f \\\\ \\hline \n',...
-    meanBattThroughput(1:5));
+    meanBattDepreciation(1:5));
 
-fprintf('Battery net value [\\$] & %.0f & %.0f & %.0f & %.0f & %.0f \\\\ \\hline \n',...
+fprintf('Battery net value [\\$] & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \\hline \n',...
     meanBattNetValue(1:5));
 
 fprintf('Battery ROI [\\%%] & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \\hline \\hline \n',...
@@ -301,7 +301,7 @@ meanCapDepreciation = meanCapDegradation.*1700;
 meanCapNetValue = meanCapValue - meanCapDepreciation;
 meanCapROI = (meanCapNetValue./1700)*100;
 
-fprintf('Capacitor value [\\$] & %.0f & %.0f & %.0f & %.0f & %.0f \\\\ \\hline \n',...
+fprintf('Capacitor value [\\$] & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \\hline \n',...
     meanCapValue(1:5));
 
 fprintf('Capacitor throughput [kWh] & %.0f & %.0f & %.0f & %.0f & %.0f \\\\ \\hline \n',...
@@ -310,10 +310,10 @@ fprintf('Capacitor throughput [kWh] & %.0f & %.0f & %.0f & %.0f & %.0f \\\\ \\hl
 fprintf('Capacitor degradation [] & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \\hline \n',...
     meanCapDegradation(1:5));
 
-fprintf('Capacitor depreciation [\\$] & %.0f & %.0f & %.0f & %.0f & %.0f \\\\ \\hline \n',...
+fprintf('Capacitor depreciation [\\$] & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \\hline \n',...
     meanCapDepreciation(1:5));
 
-fprintf('Capacitor net value [\\$] & %.0f & %.0f & %.0f & %.0f & %.0f \\\\ \\hline \n',...
+fprintf('Capacitor net value [\\$] & %.2g & %.2g & %.2g & %.2g & %.2g  \\\\ \\hline \n',...
     meanCapNetValue(1:5));
 
 fprintf('Capacitor ROI [\\%%] & %.2g & %.2g & %.2g & %.2g & %.2g \\\\ \\hline \n',...
