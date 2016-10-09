@@ -6,11 +6,11 @@
 tic;
 
 %% Running Settings:
-readDataFromMatFile = true;
-matFileName = '2016_09_25_matlabFormatData.mat';
+readDataFromMatFile = false;
+matFileName = 'optionalSavedMatFile.mat';
 
 % Replace with your own data-directory
-dataDir = 'C:\LocalData\Documents\Documents\PhD\18_DataSets\PecanStreet_Dataport\2013\';
+dataDir = '\path\to\data\files\';
 resultsDir = [pwd filesep 'plots\'];
 
 intervalLengths = [1 2 5 10 30 60];
