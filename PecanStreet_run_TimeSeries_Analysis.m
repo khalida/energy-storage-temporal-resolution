@@ -6,16 +6,18 @@
 tic;
 
 %% Running Settings:
-readDataFromMatFile = false;
+readDataFromMatFile = true;
 matFileName = '2016_09_25_matlabFormatData.mat';
-dataDir = [pwd filesep 'data\'];
+
+% Replace with your own data-directory
+dataDir = 'C:\LocalData\Documents\Documents\PhD\18_DataSets\PecanStreet_Dataport\2013\';
 resultsDir = [pwd filesep 'plots\'];
 
 intervalLengths = [1 2 5 10 30 60];
 nIntervalLengths = length(intervalLengths);
 
-batteryCapacities = [0.041 5.4 1 5 10];
-batteryCrates = [2880 1.5 1.0 1.0 1.0];
+batteryCapacities = [5.0 10.0];%[0.041 5.4 1 5 10];
+batteryCrates = [1.0 1.0]; %[2880 1.5 1.0 1.0 1.0];
 nBatteryCapacities = length(batteryCapacities);
 
 nMinsImport = 364*24*60;
@@ -59,15 +61,18 @@ for capacityIdx = 1:nBatteryCapacities;     % kWh
     battery.capacity = batteryCapacities(capacityIdx);
     battery.Crate = batteryCrates(capacityIdx);
     
-    for ii = 1:nCustomers
-        if readDataFromMatFile
-            load(matFileName);
-        else
+    if readDataFromMatFile
+        load(matFileName);
+        nCustomers = size(gen_kW, 1);
+    else
+        for ii = 1:nCustomers %#ok<UNRCH>
             [localDateNum{ii},  dem_kW{ii}, gen_kW{ii}] = ...
                 importSinglePecanStreetCustomer([dataDir fileNames{ii}], 2,...
                 nMinsImport+1);
         end
-        
+    end
+    
+    for ii = 1:nCustomers
         batteryValueResults{ii, capacityIdx} = zeros(nIntervalLengths, 4);
         
         for jj = 1:nIntervalLengths
@@ -164,11 +169,15 @@ for capacityIdx = 1:nBatteryCapacities;     % kWh
 end
 
 %% Plot time-series data for the customer with the most/least relative value
-% hidden at higher temporal resolution, use 5kWh data
-refIdx_5kWh = (batteryCapacities == 5);
-if sum(refIdx_5kWh) > 0
-    [~, mostIdx] = min(relativeBatteryValue{refIdx_5kWh}(end, :));
-    [~, leastIdx] = max(relativeBatteryValue{refIdx_5kWh}(end, :));
+% hidden at higher temporal resolution, use 1kWh data
+refIdx = (batteryCapacities == 5);
+nTrain = 45;
+nBins = 9;
+rng(13);
+
+if sum(refIdx) > 0
+    [~, mostIdx] = min(relativeBatteryValue{refIdx}(end, :));
+    [~, leastIdx] = max(relativeBatteryValue{refIdx}(end, :));
     summerIndexes = localDateNum{mostIdx} >= datenum('2013/08/01') & ...
         localDateNum{mostIdx} < datenum('2013/08/02');
     
@@ -215,12 +224,13 @@ if sum(refIdx_5kWh) > 0
     %% Attempt to fit linear regression model from coarse data to finer:
     % Convert everything to value relative to that given at 30-minute
     % interval
-    batteryValueRel10min = absBatteryValue{refIdx_5kWh}./repmat(...
-        absBatteryValue{refIdx_5kWh}(intervalLengths==10, :),...
+    batteryValueRel30min = absBatteryValue{refIdx}./repmat(...
+        absBatteryValue{refIdx}(intervalLengths==30, :),...
         [nIntervalLengths, 1]);
     
-    features = batteryValueRel10min(intervalLengths>=10, :)'; % [value at intervals of 10-min or longer]
-    response = batteryValueRel10min(1, :)';                   % [value at 1-min]
+    features = batteryValueRel30min(intervalLengths>=30 &...
+        intervalLengths<=60, :)'; % [value at intervals of 10-min or longer]
+    response = batteryValueRel30min(1, :)';                   % [value at 1-min]
     
     % get rid of NaNs:
     features = features(~isnan(features(:, 1)), :);
@@ -229,10 +239,9 @@ if sum(refIdx_5kWh) > 0
     nObs = size(features, 1);
     if nObs ~= size(response, 1); error('nObs must be same!'); end;
     
-    rng(42); % seed for repeatability
     randIdxs = randperm(nObs);
-    trainIdxs = randIdxs(1:45);
-    testIdxs = randIdxs(46:end);
+    trainIdxs = randIdxs(1:nTrain);
+    testIdxs = randIdxs((nTrain+1):end);
     
     coeffs = features(trainIdxs, :)\response(trainIdxs, :);
     
@@ -246,22 +255,22 @@ if sum(refIdx_5kWh) > 0
     
     % Finally for the test customers, plot the relative errors using estimates
     % of value at 10-minute only, and using the regression model
-    errorsFrom10minData = (features(testIdxs, 1) - response(testIdxs, :))./...
+    errorsFrom30minData = (features(testIdxs, 1) - response(testIdxs, :))./...
         response(testIdxs, :);
     
     errorsFromRegModel = (features(testIdxs,:)*coeffs - response(testIdxs, :))./...
         response(testIdxs, :);
     
     figure();
-    [counts,bins] = hist([errorsFrom10minData, errorsFromRegModel]);
+    [counts,bins] = hist([errorsFrom30minData, errorsFromRegModel], nBins);
     bar(bins, counts, 1); % the "1" makes the bars have full width, as is the case in a histogram
-    legend('10-min Data', 'Regression Model');
+    legend('30-min Data', 'Regression Model');
     xlabel({'Battery Value Error',' relative to 1-minute Value []'});
     ylabel('No. of Occurences (test set)');
     plotAsTikz([resultsDir 'errors_with_regression.tikz']);
     print('-dpdf', [resultsDir 'errors_with_regression.pdf']);
-    disp('10-min error mean:'); disp(mean(errorsFrom10minData));
-    disp('10-min error std:'); disp(std(errorsFrom10minData));
+    disp('30-min error mean:'); disp(mean(errorsFrom30minData));
+    disp('30-min error std:'); disp(std(errorsFrom30minData));
     disp('Regression error mean:'); disp(mean(errorsFromRegModel));
     disp('Regression error std:'); disp(std(errorsFromRegModel));
     
