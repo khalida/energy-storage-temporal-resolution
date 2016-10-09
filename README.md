@@ -20,8 +20,11 @@ The first file is a list of house ID numbers which have fields of interest, at 1
 All of the analysis which produced the tables and figures in the paper is run from the Matlab script `/PecanStreet_run_TimeSeries_Analysis.m`. There are a number of things which you have to do first:
 
 1) Download data from the dataport website (see instructions above)
+
 2) Update the `dataDir` variable setting in the analysis script, so it knows where to find the data
+
 3) Change any of the other run settings as you'd like (with the settings as-is, and about 1-year of data for 70 customers, the analysis takes about 1 hour to run.
+
 4) To get full plotting functionality (produce `Tikz` plots) the `matlab2tikz` library is needed (from [here](https://au.mathworks.com/matlabcentral/fileexchange/22022-matlab2tikz-matlab2tikz))
 
 
