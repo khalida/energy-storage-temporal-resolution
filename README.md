@@ -1,6 +1,5 @@
 # energy-storage-temporal-resolution
-The Importance of Temporal Resolution in Evaluating Residential Energy Storage
-(git repository to accompany the draft paper)
+The Importance of Temporal Resolution in Evaluating Residential Energy Storage, git repository to accompany the IEEE PES GM 2017 paper to be presented in Chicago. A PDF of the paper is available at `2017_01_23_IEEE_PESGM2017_Temporal_Resolution.pdf`.
 
 ## Getting Data
 Source data is not included in this repository. This is because it would be very large (several GB), and also because the data is only available under agrreement from [dataport](http://dataport.pecanstreet.org/).
