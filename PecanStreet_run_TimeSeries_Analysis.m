@@ -6,12 +6,12 @@
 tic;
 
 %% Running Settings:
-readDataFromMatFile = false;
-matFileName = 'optionalSavedMatFile.mat';
+readDataFromMatFile = true;
+matFileName = '2016_09_25_matlabFormatData.mat';
 
 % Replace with your own data-directory
 dataDir = '\path\to\data\files\';
-resultsDir = [pwd filesep 'plots\'];
+resultsDir = [pwd filesep 'plots' filesep];
 
 intervalLengths = [1 2 5 10 30 60];
 nIntervalLengths = length(intervalLengths);
@@ -56,13 +56,13 @@ relativeBatteryValue = cell(nBatteryCapacities, 1);
 absBatteryValue = cell(nBatteryCapacities, 1);
 kWhThrouhput = cell(nBatteryCapacities, 1);
 
-for capacityIdx = 1:nBatteryCapacities;     % kWh
+for capacityIdx = 1:nBatteryCapacities     % kWh
     
     battery.capacity = batteryCapacities(capacityIdx);
     battery.Crate = batteryCrates(capacityIdx);
     
     if readDataFromMatFile
-        load(matFileName);
+        load(matFileName); 
         nCustomers = size(gen_kW, 1);
     else
         for ii = 1:nCustomers %#ok<UNRCH>
@@ -221,6 +221,29 @@ if sum(refIdx) > 0
     print('-dpdf', [resultsDir 'time_series_plot_winter.pdf']);
     
     
+    %% Plot time-series data at multiple resolutions
+    figure();
+    intervals_to_plot = [1, 10, 30];
+    for idx = 1:length(intervals_to_plot)
+        interval = intervals_to_plot(idx);
+        aggregatedHours = temporallyAverageSignal(fractionalHours, interval);
+        subtightplot(length(intervals_to_plot), 1, idx);
+        plot(aggregatedHours, [temporallyAverageSignal(dem_kW{mostIdx}(summerIndexes), interval),...
+                               temporallyAverageSignal(gen_kW{mostIdx}(summerIndexes), interval)]);
+        if idx ~= length(intervals_to_plot)
+            set(gca, 'XTickLabel', '');
+        end
+        
+        ylabel({'Power [kW] at ', [num2str(interval) '-min interval']});
+        xlabel('Time [Hrs]');
+        if idx == 1
+            legend('Demand', 'PV Output');
+        end
+    end
+    plotAsTikz([resultsDir 'time_series_plot_summer_multires.tikz']);
+    print('-dpdf', [resultsDir 'time_series_plot_summer_multires.pdf']);
+    
+    
     %% Attempt to fit linear regression model from coarse data to finer:
     % Convert everything to value relative to that given at 30-minute
     % interval
@@ -237,7 +260,7 @@ if sum(refIdx) > 0
     response = response(~isnan(response(:, 1)), :);
     
     nObs = size(features, 1);
-    if nObs ~= size(response, 1); error('nObs must be same!'); end;
+    if nObs ~= size(response, 1); error('nObs must be same!'); end
     
     randIdxs = randperm(nObs);
     trainIdxs = randIdxs(1:nTrain);
